@@ -1,0 +1,98 @@
+.TH ecryptfs-setup-private 1 2008-11-17 ecryptfs-utils "eCryptfs"
+.SH NAME
+ecryptfs-setup-private \- setup an eCryptfs private directory.
+
+.SH SYNOPSIS
+.BI "ecryptfs-setup-private [\-f|\-\-force] [\-w|\-\-wrapping] [\-b|\-\-bootstrap] [\-n|\-\-no-fnek] [\-\-nopwcheck] [\-u|\-\-username USER] [\-l|\-\-loginpass LOGINPASS] [\-m|\-\-mountpass MOUNTPASS]"
+
+.SH OPTIONS
+Options available for the \fBecryptfs-setup-private\fP command:
+.TP
+.B \-f, \-\-force
+Force overwriting of an existing setup
+.TP
+.B \-w, \-\-wrapping
+Use an independent wrapping passphrase, different from the login passphrase
+.TP
+.B \-u, \-\-username USER
+User to setup, default is current user if omitted
+.TP
+.B \-l, \-\-loginpass LOGINPASS
+System passphrase for USER, used to wrap MOUNTPASS, will interactively prompt if omitted
+.TP
+.B \-m, \-\-mountpass MOUNTPASS
+Passphrase for mounting the ecryptfs directory, default is 16 bytes from /dev/urandom if omitted
+.TP
+.B \-b, \-\-bootstrap
+Bootstrap a new user's entire home directory
+.TP
+.B \-\-undo
+Display instructions on how to undo an encrypted private setup
+.TP
+.B \-n, \-\-no\-fnek
+Do not encrypt filenames; otherwise, filenames will be encrypted on systems which support filename encryption
+.TP
+.B \-\-nopwcheck
+Do not check the validity of the specified login password (useful for LDAP user accounts)
+.TP
+.B \-\-noautomount
+Setup this user such that the encrypted private directory is not automatically mounted on login
+.TP
+.B \-\-noautoumount
+Setup this user such that the encrypted private directory is not automatically unmounted at logout
+
+
+.SH DESCRIPTION
+\fBecryptfs-setup-private\fP is a program that sets up a private cryptographic mountpoint for a non-root user.
+
+Be sure to properly escape your parameters according to your shell's special character nuances, and also surround the parameters by double quotes, if necessary. Any of the parameters may be:
+
+  1) exported as environment variables
+  2) specified on the command line
+  3) left empty and interactively prompted
+
+\fBThe user SHOULD ABSOLUTELY RECORD THE MOUNT PASSPHRASE AND STORE IN A SAFE LOCATION.  If the mount passphase file is lost, or the mount passphrase is forgotten, THERE IS NO WAY TO RECOVER THE ENCRYPTED DATA.\fP
+
+Using the values of USER, MOUNTPASS, and LOGINPASS, \fBecryptfs-setup-private\fP will:
+  - Create ~/.Private (permission 700)
+  - Create ~/Private (permission 500)
+  - Backup any existing wrapped passphrases
+  - Use LOGINPASS to wrap and encrypt MOUNTPASS
+  - Write to ~/.ecryptfs/wrapped-passphrase
+  - Add the passphrase to the current keyring
+  - Write the passphrase signature to ~/.ecryptfs/Private.sig
+  - Test the cryptographic mount with a few reads and writes
+
+The system administrator can add the pam_ecryptfs.so module to the PAM stack which will automatically use the login passphrase to unwrap the mount passphrase, add the passphrase to the user's kernel keyring, and automatically perform the mount. See \fPpam_ecryptfs\fP(8).
+
+.SH FILES
+\fI~/.ecryptfs/auto-mount\fP
+
+\fI~/.Private\fP - underlying directory containing encrypted data
+
+\fI~/Private\fP - mountpoint containing decrypted data (when mounted)
+
+\fI~/.ecryptfs/Private.sig\fP - file containing signature of mountpoint passphrase
+
+\fI~/.ecryptfs/Private.mnt\fP - file containing path of the private directory mountpoint
+
+\fI~/.ecryptfs/wrapped-passphrase\fP - file containing the mount passphrase, wrapped with the login passphrase
+
+\fI~/.ecryptfs/wrapping-independent\fP - this file exists if the wrapping passphrase is independent from login passphrase
+
+.SH SEE ALSO
+.PD 0
+.TP
+\fBecryptfs-rewrap-passphrase\fP(1), \fBmount.ecryptfs_private\fP(1), \fBpam_ecryptfs\fP(8), \fBumount.ecryptfs_private\fP(1)
+
+.TP
+\fI/usr/share/doc/ecryptfs-utils/ecryptfs-faq.html\fP
+
+.TP
+\fIhttp://ecryptfs.org/\fP
+.PD
+
+.SH AUTHOR
+This manpage and the \fBecryptfs-setup-private\fP utility was written by Dustin Kirkland <kirkland@ubuntu.com> for Ubuntu systems (but may be used by others).  Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 2 or any later version published by the Free Software Foundation.
+
+On Debian and Ubuntu systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
